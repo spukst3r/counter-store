@@ -1,0 +1,12 @@
+---
+extends:
+  - airbnb
+  - plugin:import/warnings
+
+env:
+  node: 1
+
+plugins:
+  - dependencies
+
+parser: babel-eslint
