@@ -10,6 +10,7 @@ languages:
   7: C
   8: Go
   9: Shell
+  10: Other
 
 db:
   host: localhost
