@@ -77,7 +77,7 @@ router.get(url, async (req, res) => {
   };
 
   if (req.query.full) {
-    result.stats = await statsByLang(req.app.get('db'));
+    result.votes = await statsByLang(req.app.get('db'));
   }
 
   return res.status(200).json(result);
