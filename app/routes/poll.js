@@ -32,21 +32,7 @@ router.post(url, async (req, res) => {
 
   req.sanitizeBody('language').toInt();
 
-  await users.updateOne({
-    email: req.body.email,
-    'votes.id': {
-      $ne: req.body.language,
-    },
-  }, {
-    $push: {
-      votes: {
-        id: req.body.language,
-        count: 0,
-      },
-    },
-  });
-
-  await users.updateOne({
+  const votes = await users.updateOne({
     email: req.body.email,
     'votes.id': req.body.language,
   }, {
@@ -54,6 +40,22 @@ router.post(url, async (req, res) => {
       'votes.$.count': 1,
     },
   });
+
+  if (votes.modifiedCount > 0) {
+    await users.updateOne({
+      email: req.body.email,
+      'votes.id': {
+        $ne: req.body.language,
+      },
+    }, {
+      $push: {
+        votes: {
+          id: req.body.language,
+          count: 1,
+        },
+      },
+    });
+  }
 
   return res.status(200).json({
     status: 'ok',
