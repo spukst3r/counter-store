@@ -8,9 +8,10 @@ const router = express.Router();
 const url = '/api/v1/poll';
 
 
-router.get(url, async (req, res) => {
-  const db = req.app.get('db');
+const aggregateVotes = _.throttle(async (db) => {
   const users = db.collection('users');
+
+  logger.info('Aggregating votes');
 
   const result = await users.aggregate([
     {
@@ -26,10 +27,13 @@ router.get(url, async (req, res) => {
     },
   ]);
 
-  const votes = _.first(await result.toArray()).votes;
+  return _.first(await result.toArray()).votes;
+}, 2 * 60 * 1000);
 
+
+router.get(url, async (req, res) => {
   res.status(200).json({
-    totalPollHits: votes,
+    totalPollHits: await aggregateVotes(req.app.get('db')),
   });
 });
 
