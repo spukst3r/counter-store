@@ -1,4 +1,6 @@
+const _ = require('lodash');
 const express = require('express');
+const logger = require('../logger');
 
 const router = express.Router();
 
@@ -7,8 +9,27 @@ const url = '/api/v1/poll';
 
 
 router.get(url, async (req, res) => {
+  const db = req.app.get('db');
+  const users = db.collection('users');
+
+  const result = await users.aggregate([
+    {
+      $project: {
+        votes: { $sum: '$votes.count' },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        votes: { $sum: '$votes' },
+      },
+    },
+  ]);
+
+  const votes = _.first(await result.toArray()).votes;
+
   res.status(200).json({
-    totalPollHits: 123,
+    totalPollHits: votes,
   });
 });
 
@@ -41,7 +62,9 @@ router.post(url, async (req, res) => {
     },
   });
 
-  if (votes.modifiedCount > 0) {
+  logger.info(`Modified count: ${votes.modifiedCount}`);
+
+  if (votes.modifiedCount === 0) {
     await users.updateOne({
       email: req.body.email,
       'votes.id': {
