@@ -14,7 +14,9 @@ const logger = require('./app/logger');
 const pollRoute = require('./app/routes/poll');
 const registerRoute = require('./app/routes/register');
 
-const emailExistsValidator = require('./app/validators/emailExists');
+const uniqueEmailValidator = require('./app/validators/uniqueEmail');
+const existingEmailValidator = require('./app/validators/existingEmail');
+const validLanguageValidator = require('./app/validators/validLanguage');
 
 const readFile = promisify(fs.readFile);
 
@@ -24,7 +26,9 @@ const app = express();
 app.use(bodyParser.json());
 app.use(validator({
   customValidators: {
-    uniqueEmail: emailExistsValidator(app),
+    uniqueEmail: uniqueEmailValidator(app),
+    existingEmail: existingEmailValidator(app),
+    validLanguage: validLanguageValidator(app),
   },
 }));
 
@@ -48,8 +52,8 @@ async function init(path) {
 
   app.set('config', config);
   app.set('db', db);
-  app.set('counters', _(config.languages)
-    .map((v, k) => ({ id: parseInt(k, 10), lang: v, rank: 0 }))
+  app.set('languages', _(config.languages)
+    .map((v, k) => ({ id: parseInt(k, 10), lang: v, votes: 0 }))
     .value());
 
   if (process.env.NODE_ENV === 'production') {

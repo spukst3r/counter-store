@@ -1,7 +1,7 @@
 const logger = require('../logger');
 
 
-module.exports = function emailExists(app) {
+module.exports = function existingEmail(app) {
   return async (email) => {
     const db = app.get('db');
     const users = db.collection('users');
@@ -16,8 +16,8 @@ module.exports = function emailExists(app) {
       throw e;
     }
 
-    if (user) {
-      throw new Error('User with such email already exists');
+    if (!user) {
+      throw new Error('Unknown email');
     }
   };
 };
