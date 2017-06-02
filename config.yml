@@ -10,3 +10,8 @@ languages:
   7: C
   8: Go
   9: Shell
+
+db:
+  host: localhost
+  port: 27017
+  name: counter-stats
