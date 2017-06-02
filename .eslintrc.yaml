@@ -9,4 +9,7 @@ env:
 plugins:
   - dependencies
 
+rules:
+  no-underscore-dangle: off
+
 parser: babel-eslint

@@ -32,7 +32,10 @@ app.use(validator({
   },
 }));
 
-app.use(loggerMiddleware);
+if (process.env.NODE_ENV !== 'production') {
+  app.use(loggerMiddleware);
+}
+
 app.use(corsMiddleware);
 app.use(pollRoute.router);
 app.use(registerRoute.router);

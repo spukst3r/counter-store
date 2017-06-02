@@ -22,19 +22,65 @@ const aggregateVotes = _.throttle(async (db) => {
     {
       $group: {
         _id: null,
-        votes: { $sum: '$votes' },
+        totalVotes: { $sum: '$votes' },
       },
     },
   ]);
 
-  return _.first(await result.toArray()).votes;
+  return _.first(await result.toArray()).totalVotes;
+}, 2 * 60 * 1000);
+
+
+const statsByLang = _.throttle(async (db) => {
+  const users = db.collection('users');
+
+  logger.info('Aggregating full stats');
+
+  const result = await users.aggregate([
+    {
+      $unwind: {
+        path: '$votes',
+      },
+    }, {
+      $group: {
+        _id: '$votes.id',
+        count: {
+          $sum: '$votes.count',
+        },
+      },
+    }]);
+
+  return _(await result.toArray())
+    .map(r => [r._id, r.count])
+    .fromPairs()
+    .value();
 }, 2 * 60 * 1000);
 
 
 router.get(url, async (req, res) => {
-  res.status(200).json({
+  req.checkQuery('full', 'Invalid query').optional().isBoolean();
+  req.sanitizeQuery('full').toBoolean();
+
+  const errors = await req.getValidationResult();
+
+  errors.useFirstErrorOnly();
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      status: 'error',
+      errors: errors.mapped(),
+    });
+  }
+
+  const result = {
     totalPollHits: await aggregateVotes(req.app.get('db')),
-  });
+  };
+
+  if (req.query.full) {
+    result.stats = await statsByLang(req.app.get('db'));
+  }
+
+  return res.status(200).json(result);
 });
 
 
