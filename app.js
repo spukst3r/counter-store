@@ -12,6 +12,7 @@ const corsMiddleware = require('./app/middleware/cors');
 
 const pollRoute = require('./app/routes/poll');
 const registerRoute = require('./app/routes/register');
+const healthCheckRoute = require('./app/routes/healthcheck');
 
 const uniqueEmailValidator = require('./app/validators/uniqueEmail');
 const existingEmailValidator = require('./app/validators/existingEmail');
@@ -38,6 +39,7 @@ if (process.env.NODE_ENV !== 'production') {
 app.use(corsMiddleware);
 app.use(pollRoute.router);
 app.use(registerRoute.router);
+app.use(healthCheckRoute.router);
 
 
 function initDb(config) {

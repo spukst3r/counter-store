@@ -27,7 +27,7 @@ const aggregateVotes = _.throttle(async (db) => {
     },
   ]);
 
-  return _.first(await result.toArray()).totalVotes;
+  return _.get(_.first(await result.toArray()), 'totalVotes', 0);
 }, 2 * 60 * 1000);
 
 
