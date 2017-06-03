@@ -9,6 +9,7 @@ const yaml = require('js-yaml');
 
 const loggerMiddleware = require('./app/middleware/logger');
 const corsMiddleware = require('./app/middleware/cors');
+const noDelayMiddleware = require('./app/middleware/noDelay');
 
 const pollRoute = require('./app/routes/poll');
 const registerRoute = require('./app/routes/register');
@@ -23,6 +24,7 @@ const readFile = promisify(fs.readFile);
 const app = express();
 
 
+app.use(noDelayMiddleware);
 app.use(bodyParser.json());
 app.use(validator({
   customValidators: {
