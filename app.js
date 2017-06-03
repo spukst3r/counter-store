@@ -9,7 +9,6 @@ const yaml = require('js-yaml');
 
 const loggerMiddleware = require('./app/middleware/logger');
 const corsMiddleware = require('./app/middleware/cors');
-const logger = require('./app/logger');
 
 const pollRoute = require('./app/routes/poll');
 const registerRoute = require('./app/routes/register');
@@ -48,7 +47,7 @@ function initDb(config) {
 }
 
 
-async function init(path) {
+module.exports = async function createApp(path) {
   const content = await readFile(path);
   const config = yaml.safeLoad(content);
   const db = await initDb(config);
@@ -59,22 +58,5 @@ async function init(path) {
     .map((v, k) => ({ id: parseInt(k, 10), lang: v, votes: 0 }))
     .value());
 
-  if (process.env.NODE_ENV === 'production') {
-    logger.info('Started server');
-    app.listen(config.socket);
-  } else {
-    logger.info('Started server, listening on port 3000');
-    app.listen(3000);
-  }
-}
-
-
-let configName = 'config.yml';
-
-if (process.env.NODE_ENV === 'production') {
-  configName = 'config.production.yml';
-}
-
-
-init(configName)
-  .catch(err => logger.error(err));
+  return app;
+};

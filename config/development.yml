@@ -14,5 +14,9 @@ languages:
 
 db:
   host: localhost
-  port: 27017
+  port: 32017
   name: counter-stats
+
+listen:
+  port: 3000
+  backlog: 1024
