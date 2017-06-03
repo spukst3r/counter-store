@@ -9,12 +9,11 @@ languages:
   6: C#
   7: C
   8: Go
-  9: Shell
-  10: Other
+  9: Other
 
 db:
   host: localhost
-  port: 32017
+  port: 27017
   name: counter-stats
 
 listen:

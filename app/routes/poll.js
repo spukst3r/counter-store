@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const express = require('express');
 const logger = require('../logger');
+const cached = require('../utils/cached');
 
 const router = express.Router();
 
@@ -8,7 +9,7 @@ const router = express.Router();
 const url = '/api/v1/poll';
 
 
-const aggregateVotes = _.throttle(async (db) => {
+const aggregateVotes = cached('aggregateVotes', async (db) => {
   const users = db.collection('users');
 
   logger.info('Aggregating votes');
@@ -28,10 +29,10 @@ const aggregateVotes = _.throttle(async (db) => {
   ]);
 
   return _.get(_.first(await result.toArray()), 'totalVotes', 0);
-}, 2 * 60 * 1000);
+});
 
 
-const statsByLang = _.throttle(async (db) => {
+const statsByLang = cached('statsByLang', async (db) => {
   const users = db.collection('users');
 
   logger.info('Aggregating full stats');
@@ -54,7 +55,7 @@ const statsByLang = _.throttle(async (db) => {
     .map(r => [r._id, r.count])
     .fromPairs()
     .value();
-}, 2 * 60 * 1000);
+});
 
 
 router.get(url, async (req, res) => {
@@ -73,11 +74,11 @@ router.get(url, async (req, res) => {
   }
 
   const result = {
-    totalPollHits: await aggregateVotes(req.app.get('db')),
+    totalPollHits: await aggregateVotes('partial', req.app.get('db')),
   };
 
   if (req.query.full) {
-    result.votes = await statsByLang(req.app.get('db'));
+    result.votes = await statsByLang('full', req.app.get('db'));
   }
 
   return res.status(200).json(result);
@@ -85,8 +86,17 @@ router.get(url, async (req, res) => {
 
 
 router.post(url, async (req, res) => {
-  req.checkBody('email', 'Invalid email').notEmpty().isEmail().existingEmail();
-  req.checkBody('language', 'Invalid language').isInt().validLanguage();
+  req.checkBody('email', 'Invalid email')
+    .notEmpty()
+      .withMessage('Email is required')
+    .isEmail()
+    .existingEmail()
+      .withMessage('This email is not registered');
+
+  req.checkBody('language', 'Invalid language')
+    .isInt()
+    .validLanguage()
+      .withMessage('Unknown language');
 
   const errors = await req.getValidationResult();
 

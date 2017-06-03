@@ -7,8 +7,19 @@ const url = '/api/v1/register';
 
 
 router.post(url, async (req, res) => {
-  req.checkBody('email', 'Invalid email').notEmpty().isEmail().uniqueEmail();
-  req.checkBody('name', 'Invalid name').notEmpty().isAlpha();
+  req.checkBody('email', 'Invalid email')
+    .notEmpty()
+      .withMessage('Email is required')
+    .isEmail()
+    .uniqueEmail()
+      .withMessage('This email is already registered');
+
+  req.checkBody('name', 'Invalid name')
+    .notEmpty()
+      .withMessage('Name is required')
+    .matches(/^[a-z][a-z0-9- ]*[a-z]$/i);
+
+  req.sanitizeBody('name').toString();
 
   const errors = await req.getValidationResult();
 

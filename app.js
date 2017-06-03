@@ -42,10 +42,20 @@ app.use(registerRoute.router);
 app.use(healthCheckRoute.router);
 
 
-function initDb(config) {
+async function initDb(config) {
   const db = config.db;
 
-  return MongoClient.connect(`mongodb://${db.host}:${db.port}/${db.name}`);
+  const connection = await MongoClient.connect(`mongodb://${db.host}:${db.port}/${db.name}`);
+
+  const cache = connection.collection('cache');
+
+  await cache.createIndex({
+    expireAt: 1,
+  }, {
+    expireAfterSeconds: 0,
+  });
+
+  return connection;
 }
 
 
