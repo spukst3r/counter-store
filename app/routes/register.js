@@ -17,7 +17,7 @@ router.post(url, async (req, res) => {
   req.checkBody('name', 'Invalid name')
     .notEmpty()
       .withMessage('Name is required')
-    .matches(/^[a-z][a-z0-9- ]*[a-z]$/i);
+    .matches(/^[a-zа-я][a-zа-я0-9- ]*$/i);
 
   req.sanitizeBody('name').toString();
 

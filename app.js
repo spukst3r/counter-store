@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const { promisify } = require('util');
-const { MongoClient } = require('mongodb');
+const { MongoClient, ReadPreference } = require('mongodb');
 const fs = require('fs');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -47,7 +47,9 @@ app.use(healthCheckRoute.router);
 async function initDb(config) {
   const db = config.db;
 
-  const connection = await MongoClient.connect(`mongodb://${db.host}:${db.port}/${db.name}`);
+  const connection = await MongoClient.connect(`mongodb://${db.host}:${db.port}/${db.name}`, {
+    readPreference: ReadPreference.SECONDARY_PREFERRED,
+  });
 
   const cache = connection.collection('cache');
 
