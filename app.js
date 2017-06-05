@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const { URL } = require('url');
 const { promisify } = require('util');
 const { MongoClient, ReadPreference } = require('mongodb');
 const fs = require('fs');
@@ -46,6 +47,11 @@ app.use(healthCheckRoute.router);
 
 async function initDb(config) {
   const db = config.db;
+  const connectionString = new URL(`mongodb://${db.host}/${db.name}`);
+
+  if (db.replicaSet) {
+    connectionString.searchParams.append('replicaSet', db.replicaSet);
+  }
 
   const connection = await MongoClient.connect(`mongodb://${db.host}:${db.port}/${db.name}`, {
     readPreference: ReadPreference.SECONDARY_PREFERRED,
