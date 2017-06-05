@@ -21,6 +21,9 @@ const uniqueEmailValidator = require('./app/validators/uniqueEmail');
 const existingEmailValidator = require('./app/validators/existingEmail');
 const validLanguageValidator = require('./app/validators/validLanguage');
 
+const Lock = require('./app/utils/lock');
+const setTimers = require('./app/utils/periodic');
+
 const readFile = promisify(fs.readFile);
 
 const app = express();
@@ -78,9 +81,14 @@ module.exports = async function createApp(path) {
 
   app.set('config', config);
   app.set('db', db);
+  app.set('users', {});
+  app.set('lock', new Lock());
   app.set('languages', _(config.languages)
-    .map((v, k) => ({ id: parseInt(k, 10), lang: v, votes: 0 }))
+    .map((v, k) => ({ id: parseInt(k, 10), count: 0 }))
+    .sortBy(['id'])
     .value());
+
+  setTimers(app);
 
   return app;
 };

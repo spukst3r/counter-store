@@ -38,7 +38,7 @@ router.post(url, async (req, res) => {
   await users.insertOne({
     email: req.body.email,
     name: req.body.name,
-    votes: [],
+    votes: req.app.get('languages'),
   });
 
   return res.status(201).json({});

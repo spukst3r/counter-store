@@ -109,36 +109,18 @@ router.post(url, async (req, res) => {
     });
   }
 
-  const users = req.app.get('db').collection('users');
-
   req.sanitizeBody('language').toInt();
 
-  const votes = await users.updateOne({
-    email: req.body.email,
-    'votes.id': req.body.language,
-  }, {
-    $inc: {
-      'votes.$.count': 1,
-    },
-  });
+  await req.app.get('lock').wait();
 
-  logger.info(`Modified count: ${votes.modifiedCount}`);
+  const users = req.app.get('users');
+  const user = _.get(users, req.body.email, {});
+  let langCounter = _.get(user, req.body.language, 0);
 
-  if (votes.modifiedCount === 0) {
-    await users.updateOne({
-      email: req.body.email,
-      'votes.id': {
-        $ne: req.body.language,
-      },
-    }, {
-      $push: {
-        votes: {
-          id: req.body.language,
-          count: 1,
-        },
-      },
-    });
-  }
+  langCounter += 1;
+
+  user[req.body.language] = langCounter;
+  users[req.body.email] = user;
 
   return res.status(200).json({
     status: 'ok',
