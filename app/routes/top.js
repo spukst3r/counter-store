@@ -1,14 +1,13 @@
 const _ = require('lodash');
-const express = require('express');
 const cached = require('../utils/cached');
+const express = require('express');
 
 const router = express.Router();
 
 
-const url = '/api/v1/userstats';
+const url = '/api/v1/top';
 
-
-const aggregateUsers = cached('aggregateUsers', async (db) => {
+const getTopUsers = cached('topUsers', async (db) => {
   const users = db.collection('users');
 
   const result = await users.aggregate([
@@ -28,29 +27,20 @@ const aggregateUsers = cached('aggregateUsers', async (db) => {
         count: -1,
       },
     }, {
-      $limit: 3,
-    }, {
-      $project: {
-        _id: 0,
-        email: '$_id',
-        count: 1,
-      },
+      $limit: 5,
     },
   ]);
 
   return result.toArray();
-});
+}, 60);
 
 
 router.get(url, async (req, res) => {
   const result = {
-    userStats: _.map(await aggregateUsers('partial', req.app.get('db')), (s) => {
-      const newStat = _.cloneDeep(s);
-
-      newStat.email = `${newStat.email.split('@')[0]}@...`;
-
-      return newStat;
-    }),
+    top: _.map(await getTopUsers('full', req.app.get('db')), user => ({
+      email: `${user._id.split('@')[0]}@...`,
+      count: user.count,
+    })),
   };
 
   return res.status(200).json(result);

@@ -16,6 +16,7 @@ const pollRoute = require('./app/routes/poll');
 const registerRoute = require('./app/routes/register');
 const healthCheckRoute = require('./app/routes/healthcheck');
 const userstatsRoute = require('./app/routes/userstats');
+const topRoute = require('./app/routes/top');
 
 const uniqueEmailValidator = require('./app/validators/uniqueEmail');
 const existingEmailValidator = require('./app/validators/existingEmail');
@@ -48,6 +49,7 @@ app.use(pollRoute.router);
 app.use(registerRoute.router);
 app.use(healthCheckRoute.router);
 app.use(userstatsRoute.router);
+app.use(topRoute.router);
 
 
 async function initDb(config) {
