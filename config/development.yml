@@ -13,7 +13,6 @@ languages:
 
 db:
   host: localhost
-  port: 27017
   name: counter-stats
 
 listen:
