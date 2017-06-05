@@ -78,6 +78,11 @@ module.exports = async function createApp(path) {
   const content = await readFile(path);
   const config = yaml.safeLoad(content);
   const db = await initDb(config);
+  let gc = _.noop;
+
+  if (typeof global.gc !== 'undefined') {
+    gc = global.gc;
+  }
 
   app.set('config', config);
   app.set('db', db);
@@ -87,6 +92,7 @@ module.exports = async function createApp(path) {
     .map((v, k) => ({ id: parseInt(k, 10), count: 0 }))
     .sortBy(['id'])
     .value());
+  app.set('gc', gc);
 
   setTimers(app);
 

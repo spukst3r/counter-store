@@ -38,6 +38,7 @@ function setTimers(app) {
       }
 
       app.set('users', {});
+      app.get('gc')();
     });
   }
 
