@@ -4,6 +4,8 @@ const randomInt = require('./random');
 
 
 function setTimers(app) {
+  const cacheSettings = _.get(app.get('config'), 'cache', {});
+
   async function saveToDb() {
     const db = app.get('db');
 
@@ -40,10 +42,13 @@ function setTimers(app) {
   }
 
   function interval() {
-    setTimeout(saveToDb, randomInt(1 * 1000, 10 * 1000));
+    setTimeout(saveToDb, randomInt(
+      _.get(cacheSettings, 'workerRandomDelay.min', 1000),
+      _.get(cacheSettings, 'workerRandomDelay.max', 10000),
+    ));
   }
 
-  setInterval(interval, 30 * 1000);
+  setInterval(interval, _.get(cacheSettings, 'pollDelay', 2 * 60 * 1000));
 
   async function flushAndExit() {
     if (!_.isEmpty(app.get('users'))) {

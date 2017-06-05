@@ -18,3 +18,9 @@ db:
 listen:
   port: 3000
   backlog: 1024
+
+cache:
+  pollDelay: 120000
+  workerRandomDelay:
+    min: 1000
+    max: 10000
