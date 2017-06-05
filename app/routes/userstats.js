@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const express = require('express');
 const cached = require('../utils/cached');
 
@@ -43,7 +44,13 @@ const aggregateUsers = cached('aggregateUsers', async (db) => {
 
 router.get(url, async (req, res) => {
   const result = {
-    userStats: await aggregateUsers('partial', req.app.get('db')),
+    userStats: _.map(await aggregateUsers('partial', req.app.get('db')), (s) => {
+      const newStat = _.cloneDeep(s);
+
+      newStat.email = `${newStat.email.split('@')[0]}@...`;
+
+      return newStat;
+    }),
   };
 
   return res.status(200).json(result);
