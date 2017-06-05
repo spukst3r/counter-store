@@ -53,7 +53,7 @@ async function initDb(config) {
     connectionString.searchParams.append('replicaSet', db.replicaSet);
   }
 
-  const connection = await MongoClient.connect(`mongodb://${db.host}:${db.port}/${db.name}`, {
+  const connection = await MongoClient.connect(connectionString.toString(), {
     readPreference: ReadPreference.SECONDARY_PREFERRED,
   });
 
